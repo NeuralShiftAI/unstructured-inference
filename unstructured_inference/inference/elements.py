@@ -272,12 +272,8 @@ def is_cid_present(text: str) -> bool:
 
 def remove_control_characters(text: str) -> str:
     """Removes control characters from text."""
-
-    # Replace newline character with a space
-    #text = text.replace("\n", " ")
     # Remove other control characters
-    out_text = "".join(c for c in text if unicodedata.category(c)[0] != "C")
-    return out_text
+    return "".join(c if unicodedata.category(c)[0] != "C" else "\n" for c in text)
 
 
 def region_bounding_boxes_are_almost_the_same(
