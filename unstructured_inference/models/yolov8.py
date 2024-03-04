@@ -25,7 +25,6 @@ YOLOv8_LABEL_MAP = {
     10: ElementType.TITLE,
 }
 
-model = YOLO('/home/joao/yolov8n/weights/best.pt')
 MODEL_TYPES = {
     "yolov8n": LazyDict(
         model_path=LazyEvaluateInfo(
