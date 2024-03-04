@@ -139,18 +139,28 @@ def merge_inferred_layout_with_extracted_layout(
                     # Looks like these represent the same region
                     if extracted_is_image:
                         # keep extracted region, remove inferred region
+                        # NOTE(GravO): if the boxes are the same and contain an image,
+                        # keep only the extracted image
                         inferred_regions_to_remove.append(inferred_region)
                     else:
                         # keep inferred region, remove extracted region
+                        # NOTE(GravO): if the boxes are the same and are not an image,
+                        # keep only the inferred box and grow it
                         grow_region_to_match_region(inferred_region.bbox, extracted_region.bbox)
                         inferred_region.text = extracted_region.text
                         region_matched = True
                 elif extracted_is_subregion_of_inferred and inferred_is_text:
                     if extracted_is_image:
                         # keep both extracted and inferred regions
+                        # NOTE(GravO): if the boxes are not the same, but the extracted
+                        # box is inside the infered box and one of them is an image and
+                        # the other is text, keep them both
                         region_matched = False
                     else:
                         # keep inferred region, remove extracted region
+                        # NOTE(GravO): if the boxes are not the same, but the extracted
+                        # box is inside the infered box and they are both text boxes,
+                        # keep only the inferred region and grow it
                         grow_region_to_match_region(inferred_region.bbox, extracted_region.bbox)
                         region_matched = True
                 elif (
@@ -158,6 +168,17 @@ def merge_inferred_layout_with_extracted_layout(
                     and inferred_region.type != ElementType.TABLE
                 ):
                     # keep extracted region, remove inferred region
+                    # NOTE(GravO):
+                    # 1. We reach here when
+                    #  - The extracted and infered boxes intersect
+                    #  - They are not the same box
+                    #  - The extracted box is not inside the infered box (assuming the infered.type is text)
+                    #  - The infered box is inside the extracted box (the original OCR box)
+                    # 2. In this case we will
+                    #  - Remove the infered box (obtained using the model)
+                    #
+                    # In other words, we remove the inferred box, if it is inside the
+                    # extracted box
                     inferred_regions_to_remove.append(inferred_region)
         if not region_matched:
             extracted_elements_to_add.append(extracted_region)
